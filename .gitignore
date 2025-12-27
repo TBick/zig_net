@@ -1,0 +1,21 @@
+# Zig build artifacts
+zig-cache/
+zig-out/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+*.test
+coverage/
+
+# Claude agent state (optional, keep for development tracking)
+.claude/
