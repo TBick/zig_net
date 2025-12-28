@@ -7,7 +7,7 @@
 **Purpose:** Full-featured HTTP/HTTPS client with TLS support, redirects, chunked encoding, connection pooling, and timeout handling
 **Zig Version:** 0.15.1+
 **Dependencies:** None (uses Zig stdlib only)
-**Status:** 🚧 In Development - Phase 2: Core HTTP Client Complete
+**Status:** 🚧 In Development - Phase 3: Advanced Features Complete
 **Installation:** (Coming soon - package will be available via `zig fetch`)
 
 ## Current Development Status
@@ -29,10 +29,19 @@
 - [x] Unit tests (34/34 passing)
 - [x] Integration tests with httpbin.org (tests/integration/httpbin_test.zig)
 
+### ✅ Phase 3: Advanced Features & HTTPS/TLS (COMPLETE)
+- [x] Automatic redirect following with loop detection
+- [x] Configurable redirect behavior (follow_redirects, max_redirects)
+- [x] Redirect status code handling (301, 302, 303, 307, 308)
+- [x] Timeout utilities and configuration
+- [x] TLS verification configuration
+- [x] Enhanced ClientOptions
+- [x] Integration test framework with redirect tests
+- [x] 41/41 tests passing
+
 ### 📋 Upcoming Phases
-- **Phase 3:** HTTPS/TLS Support
-- **Phase 4:** Advanced Features (redirects, chunked encoding, timeouts)
-- **Phase 5:** Testing & Validation
+- **Phase 4:** Enhanced Features (chunked encoding, compression)
+- **Phase 5:** Testing & Validation (live integration tests)
 - **Phase 6:** Documentation & Packaging
 - **Phase 7:** CI/CD & Release
 
@@ -127,8 +136,10 @@ pub fn main() !void {
 
     // Create client
     var client = try zig_net.Client.init(allocator, .{
+        .follow_redirects = true,
+        .max_redirects = 10,
         .timeout_ms = 5000,
-        .max_redirects = 5,
+        .verify_tls = true,
     });
     defer client.deinit();
 
@@ -213,21 +224,32 @@ const response = zig_net.Client.get(allocator, uri) catch |err| {
 - **Status Codes:** All standard HTTP status codes with classification helpers (isSuccess, isRedirection, isError, etc.)
 - **Documentation:** AI-optimized inline documentation with examples
 
-### ✅ Newly Implemented (Phase 2)
+### ✅ Newly Implemented (Phase 3)
+- **Automatic Redirects:** Follows redirects with configurable limits and loop detection
+- **Redirect Handling:** Proper handling of 301, 302, 303, 307, 308 status codes
+- **Method Conversion:** Automatic method conversion for 303 redirects (to GET)
+- **Timeout Utilities:** Deadline calculation and timeout management utilities
+- **Enhanced Options:** Configurable follow_redirects, max_redirects, timeout_ms, verify_tls
+- **Comprehensive Testing:** 41 unit tests passing, integration test suite for redirects
+- **HTTPS Support:** Built-in via std.http.Client with configurable verification
+
+### ✅ Previously Implemented (Phase 2)
 - **HTTP Client:** Full request/response abstraction layer wrapping std.http.Client
 - **Headers Management:** Case-insensitive header handling with HashMap storage
 - **Request Builder:** Fluent API with method chaining for building requests
 - **Response Parser:** Convenient accessors for status, headers, and body
-- **Basic Testing:** 34 unit tests, integration test framework ready
+
+### ✅ Foundation (Phase 1)
+- **Error Handling:** Comprehensive error types with helpful messages
+- **HTTP Methods:** All standard methods with safety/idempotency checks
+- **Status Codes:** Complete status code utilities with classification helpers
 
 ### 📋 Planned
-- **HTTPS/TLS:** Certificate validation, TLS 1.2/1.3 support
-- **Redirects:** Automatic redirect following with loop detection
 - **Chunked Encoding:** Support for chunked transfer encoding
-- **Connection Pooling:** Leverage std.http.Client pooling
-- **Timeouts:** Configurable request/response timeouts
+- **Connection Pooling:** Enhanced control over std.http.Client pooling
 - **Compression:** Gzip/deflate support
-- **Examples:** Comprehensive usage examples
+- **Live Integration Tests:** Enabled tests against httpbin.org
+- **Examples:** Comprehensive usage examples and tutorials
 
 ## For AI Agents
 
@@ -277,4 +299,4 @@ See the [implementation plan](/home/tbick/.claude/plans/zany-watching-peacock.md
 **Project Status:** 🚧 In Development
 **Current Version:** 0.1.0-dev
 **Zig Version:** 0.15.1
-**Last Updated:** 2025-12-27
+**Last Updated:** 2025-12-28

@@ -42,6 +42,9 @@ pub const errors = @import("errors.zig");
 pub const Error = errors.Error;
 pub const ErrorSet = errors.ErrorSet;
 
+// Re-export timeout utilities
+pub const timeout = @import("timeout.zig");
+
 // Run all tests
 test {
     std.testing.refAllDecls(@This());
@@ -52,4 +55,5 @@ test {
     _ = @import("client/Request.zig");
     _ = @import("client/Response.zig");
     _ = @import("client/Client.zig");
+    _ = @import("timeout.zig");
 }

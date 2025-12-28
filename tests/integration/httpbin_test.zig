@@ -4,14 +4,17 @@
 //! They test various HTTP methods, headers, redirects, and status codes.
 //!
 //! Note: These tests require internet connectivity and will fail if httpbin.org is unreachable.
+//! Run with: zig build test -Dintegration=true
+//!
+//! To run manually, uncomment specific tests below.
 
 const std = @import("std");
 const zig_net = @import("zig_net");
 
-// Note: Integration tests are commented out by default because they require network access.
-// Uncomment the tests below to run them manually.
+// These tests are commented out by default because they require network access.
+// Uncomment individual tests to run them.
 
-// test "integration: GET request" {
+test "integration: GET request" {
 //     const testing = std.testing;
 //     const allocator = testing.allocator;
 //
@@ -153,8 +156,91 @@ const zig_net = @import("zig_net");
 //     try testing.expectEqual(@as(u16, 200), response.getStatus());
 // }
 
+// Redirect tests (commented out - uncomment to run)
+// test "integration: Follow redirect" {
+//     const testing = std.testing;
+//     const allocator = testing.allocator;
+//
+//     var client = try zig_net.Client.init(allocator, .{});
+//     defer client.deinit();
+//
+//     // httpbin.org/redirect/1 redirects once to /get
+//     const response = try client.get("https://httpbin.org/redirect/1");
+//     defer response.deinit();
+//
+//     try testing.expect(response.isSuccess());
+//     try testing.expectEqual(@as(u16, 200), response.getStatus());
+// }
+
+// test "integration: Multiple redirects" {
+//     const testing = std.testing;
+//     const allocator = testing.allocator;
+//
+//     var client = try zig_net.Client.init(allocator, .{});
+//     defer client.deinit();
+//
+//     // httpbin.org/redirect/3 redirects 3 times
+//     const response = try client.get("https://httpbin.org/redirect/3");
+//     defer response.deinit();
+//
+//     try testing.expect(response.isSuccess());
+//     try testing.expectEqual(@as(u16, 200), response.getStatus());
+// }
+
+// test "integration: Too many redirects" {
+//     const testing = std.testing;
+//     const allocator = testing.allocator;
+//
+//     var client = try zig_net.Client.init(allocator, .{
+//         .max_redirects = 2,
+//     });
+//     defer client.deinit();
+//
+//     // httpbin.org/redirect/5 redirects 5 times, but we only allow 2
+//     try testing.expectError(
+//         zig_net.Error.TooManyRedirects,
+//         client.get("https://httpbin.org/redirect/5"),
+//     );
+// }
+
+// test "integration: Absolute redirect" {
+//     const testing = std.testing;
+//     const allocator = testing.allocator;
+//
+//     var client = try zig_net.Client.init(allocator, .{});
+//     defer client.deinit();
+//
+//     // httpbin.org/absolute-redirect/1 redirects to an absolute URL
+//     const response = try client.get("https://httpbin.org/absolute-redirect/1");
+//     defer response.deinit();
+//
+//     try testing.expect(response.isSuccess());
+// }
+
+// test "integration: No redirects when disabled" {
+//     const testing = std.testing;
+//     const allocator = testing.allocator;
+//
+//     var client = try zig_net.Client.init(allocator, .{
+//         .follow_redirects = false,
+//     });
+//     defer client.deinit();
+//
+//     const response = try client.get("https://httpbin.org/redirect/1");
+//     defer response.deinit();
+//
+//     // Should get the redirect response, not the final page
+//     try testing.expect(response.isRedirection());
+//     try testing.expect(response.getHeader("Location") != null);
+// }
+
 // Placeholder test to ensure the file compiles
 test "integration tests placeholder" {
     // Integration tests are commented out by default
     // Uncomment the tests above to run them manually
+    //
+    // To enable all tests, uncomment them and run:
+    // zig build test
+    //
+    // Note: Requires internet connection and access to httpbin.org
 }
