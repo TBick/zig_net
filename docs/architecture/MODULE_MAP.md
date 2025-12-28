@@ -8,24 +8,34 @@ This document provides a quick reference for locating code, understanding file p
 
 | File Path | Status | Purpose | Key Types/Functions | Modify When |
 |-----------|--------|---------|---------------------|-------------|
-| `src/root.zig` | 📋 Template | Public API entry point | Exports all public types | Adding new public API |
+| **Core API** |
+| `src/root.zig` | ✅ Complete | Public API entry point | Exports all public types | Adding new public API |
 | `src/errors.zig` | ✅ Complete | Error type definitions | `Error`, `ErrorSet`, `mapStdError()`, `getErrorMessage()` | Adding new error type |
-| `src/main.zig` | 📋 Placeholder | CLI demo tool | `main()` | Testing/demonstration |
-| `src/client/Client.zig` | 🚧 Planned | HTTP/HTTPS client | `Client`, `init()`, `get()`, `post()`, `send()` | Client behavior |
-| `src/client/Request.zig` | 🚧 Planned | Request builder | `Request`, `setHeader()`, `setBody()` | Request building |
-| `src/client/Response.zig` | 🚧 Planned | Response parser | `Response`, `status()`, `headers()`, `body()` | Response parsing |
-| `src/client/Headers.zig` | 🚧 Planned | Header management | `Headers`, `get()`, `set()` | Header handling |
-| `src/protocol/method.zig` | ✅ Complete | HTTP methods | `Method`, `toString()`, `fromString()`, `isSafe()` | Adding HTTP method |
+| `src/timeout.zig` | ✅ Complete | Timeout utilities | Deadline calculation, expiration checking | Timeout features |
+| **HTTP Client** |
+| `src/client/Client.zig` | ✅ Complete | HTTP/HTTPS client | `Client`, `init()`, `get()`, `post()`, `send()` | Client behavior |
+| `src/client/Request.zig` | ✅ Complete | Request builder | `Request`, `setHeader()`, `setBody()`, `setBasicAuth()` | Request building |
+| `src/client/Response.zig` | ✅ Complete | Response parser | `Response`, `getStatus()`, `getBody()`, `isSuccess()` | Response parsing |
+| `src/client/Headers.zig` | ✅ Complete | Header management | `Headers`, `get()`, `set()`, case-insensitive | Header handling |
+| **Protocol** |
+| `src/protocol/method.zig` | ✅ Complete | HTTP methods | `Method`, `toString()`, `fromString()`, `isSafe()`, `isIdempotent()` | Adding HTTP method |
 | `src/protocol/status.zig` | ✅ Complete | Status codes | `StatusCode`, `isSuccess()`, `getReasonPhrase()` | Adding status code |
-| `src/protocol/http.zig` | 🚧 Planned | HTTP utilities | HTTP version, constants | HTTP protocol utilities |
-| `src/tls/config.zig` | 🚧 Planned | TLS configuration | `TlsConfig`, cert validation | TLS settings |
-| `src/tls/cert.zig` | 🚧 Planned | Certificate mgmt | Cert loading, validation | Certificate handling |
-| `src/encoding/chunked.zig` | 🚧 Planned | Chunked encoding | Encode/decode chunked | Chunked transfer |
-| `src/timeout.zig` | 🚧 Planned | Timeout handling | Timeout wrappers | Timeout management |
-| `build.zig` | ✅ Template | Build configuration | Module/executable setup | Adding modules/tests |
-| `build.zig.zon` | ✅ v0.1.0 | Package manifest | Dependencies, metadata | Package metadata |
+| `src/protocol/http.zig` | ✅ Complete | HTTP utilities | MIME types, URL encoding, Content-Type parsing | HTTP protocol utilities |
+| **Encoding** |
+| `src/encoding/chunked.zig` | ✅ Complete | Chunked encoding | RFC 7230 compliant decoder | Chunked transfer |
+| **Authentication** |
+| `src/auth/auth.zig` | ✅ Complete | HTTP Auth | `BasicAuth`, `BearerAuth`, `toHeader()` | Auth methods |
+| **Cookies** |
+| `src/cookies/Cookie.zig` | ✅ Complete | Cookie parsing | `Cookie`, `parse()`, `matchesDomain()`, RFC 6265 | Cookie features |
+| `src/cookies/CookieJar.zig` | ✅ Complete | Cookie storage | `CookieJar`, `setCookie()`, `getCookiesForRequest()` | Cookie management |
+| **Interceptors** |
+| `src/interceptors/interceptor.zig` | ✅ Complete | Interceptor types | `RequestInterceptorFn`, `ResponseInterceptorFn`, logging | Interceptor features |
+| `src/interceptors/metrics.zig` | ✅ Complete | Metrics collection | `MetricsCollector`, `recordResponse()`, statistics | Metrics features |
+| **Build System** |
+| `build.zig` | ✅ Complete | Build configuration | Module/executable setup | Adding modules/tests |
+| `build.zig.zon` | ✅ v0.1.0-alpha | Package manifest | Dependencies, metadata, paths | Package metadata |
 
-Legend: ✅ Complete | 🚧 In Progress | 📋 Template/Planned
+Legend: ✅ Complete | 🚧 In Progress | 📋 Planned
 
 ---
 
@@ -78,17 +88,47 @@ Legend: ✅ Complete | 🚧 In Progress | 📋 Template/Planned
 3. **Reference:** From README.md
 4. **Ensure:** Example is runnable and well-commented
 
+### "I want to add authentication support"
+
+1. **Look at:** `src/auth/auth.zig` - Basic and Bearer auth implementations
+2. **Look at:** `src/client/Request.zig` - `setBasicAuth()` and `setBearerToken()` methods
+3. **Add:** New auth type to `src/auth/auth.zig` if needed
+4. **Test:** Add tests to verify auth header generation
+
+### "I want to add cookie support"
+
+1. **Look at:** `src/cookies/Cookie.zig` - Cookie parsing (RFC 6265)
+2. **Look at:** `src/cookies/CookieJar.zig` - Cookie storage and management
+3. **Modify:** Cookie attributes in `Cookie.zig`
+4. **Modify:** Cookie matching logic in `CookieJar.zig`
+5. **Test:** Ensure domain/path matching works correctly
+
+### "I want to add request/response interceptors"
+
+1. **Look at:** `src/interceptors/interceptor.zig` - Interceptor function types
+2. **Create:** New interceptor function following `RequestInterceptorFn` or `ResponseInterceptorFn` signature
+3. **Example:** See `loggingRequestInterceptor()` and `loggingResponseInterceptor()`
+4. **Use:** Call interceptor before/after request/response
+
+### "I want to collect HTTP metrics"
+
+1. **Look at:** `src/interceptors/metrics.zig` - `MetricsCollector` implementation
+2. **Use:** Initialize MetricsCollector, call `recordRequest()` and `recordResponse()`
+3. **Extend:** Add new metrics to `MetricsCollector` struct
+4. **Display:** Use `printStats()` or `getSuccessRate()`
+
 ### "I want to find where TLS is configured"
 
-1. **Look at:** `src/tls/config.zig` (TLS configuration)
-2. **Look at:** `src/tls/cert.zig` (Certificate management)
-3. **Look at:** `src/client/Client.zig` (TLS integration)
+1. **Look at:** `src/client/Client.zig` - `ClientOptions.verify_tls`
+2. **Look at:** Zig stdlib `std.http.Client` - Underlying TLS implementation
+3. **Note:** TLS is handled automatically by `std.http.Client`
 
 ### "I want to understand error handling patterns"
 
 1. **Read:** `src/errors.zig` - All error definitions
 2. **Read:** `docs/architecture/ARCHITECTURE.md` - Error handling section
 3. **Look at:** Existing code in `src/protocol/*.zig` for error usage patterns
+4. **Use:** `errors.getErrorMessage()` for human-readable error messages
 
 ---
 

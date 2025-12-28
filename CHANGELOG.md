@@ -7,18 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 6: Documentation & Packaging 🚧
+- Enhanced documentation and packaging for production release
+- CONTRIBUTING.md guide for contributors
+- Comprehensive API documentation
+- Usage guides and tutorials
+
+## [0.1.0-alpha] - 2025-12-28
+
 ### Added - Phase 5: Authentication & Cookie Management ✅
-- HTTP Authentication Helpers (`src/auth/`)
+- **HTTP Authentication Helpers** (`src/auth/`)
   - Basic Authentication (RFC 7617) with base64 encoding
   - Bearer Token authentication (RFC 6750) for OAuth 2.0 and JWT
   - Comprehensive security documentation and best practices
 
-- Request Authentication Methods (`src/client/Request.zig`)
+- **Request Authentication Methods** (`src/client/Request.zig`)
   - `setBasicAuth()` - Convenient Basic authentication
   - `setBearerToken()` - Convenient Bearer token authentication
   - Method chaining support for all auth methods
 
-- Cookie Management (`src/cookies/`)
+- **Cookie Management** (`src/cookies/`)
   - `Cookie.zig` - RFC 6265 compliant cookie parsing
   - Cookie attributes: Domain, Path, Expires, Max-Age, Secure, HttpOnly, SameSite
   - Domain and path matching for cookie selection
@@ -29,10 +37,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Expired cookie cleanup
   - 14 comprehensive unit tests
 
-- Compression Support
+- **Request/Response Interceptors** (`src/interceptors/`)
+  - Middleware pattern for request/response processing
+  - `RequestInterceptorFn` and `ResponseInterceptorFn` types
+  - Built-in logging interceptors
+  - Custom interceptor support
+
+- **Metrics Collection** (`src/interceptors/metrics.zig`)
+  - `MetricsCollector` for HTTP statistics
+  - Request/response counting
+  - Success/error rate tracking
+  - Bytes received tracking
+  - Success rate calculation
+
+- **Integration Tests**
+  - Basic Authentication test (httpbin.org/basic-auth)
+  - Bearer Token authentication test (httpbin.org/bearer)
+  - Cookie handling test (httpbin.org/cookies)
+
+- **Examples**
+  - `examples/auth_example.zig` - Authentication examples
+  - `examples/cookies_example.zig` - Cookie management examples
+  - `examples/interceptors_example.zig` - Interceptor usage examples
+
+- **Compression Support**
   - **Note:** Compression (gzip, deflate, zstd) is automatically handled by `std.http.Client`
   - No custom implementation needed - it's built into the underlying HTTP client
   - Transparent compression/decompression for all requests and responses
+
+### Testing
+- 90+ tests passing
+- Full coverage of authentication, cookies, and interceptors
 
 ### Added - Phase 4: Enhanced Features & Convenience Methods ✅
 - Chunked Transfer Encoding Support (`src/encoding/chunked.zig`)

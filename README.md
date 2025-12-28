@@ -128,34 +128,13 @@ src/
 | `BearerAuth` | Bearer token auth | ✅ Complete | `init()`, `toHeader()` |
 | `MetricsCollector` | HTTP metrics | ✅ Complete | `recordRequest()`, `recordResponse()`, `getSuccessRate()`, `printStats()` |
 
-## Planned API Usage
+## Usage Examples
 
-### High-Level Convenience API (Coming Soon)
-
-```zig
-const zig_net = @import("zig_net");
-const std = @import("std");
-
-pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    defer _ = gpa.deinit();
-    const allocator = gpa.allocator();
-
-    // Simple GET request
-    const response = try zig_net.Client.get(allocator, "https://httpbin.org/get");
-    defer response.deinit();
-
-    if (response.status.isSuccess()) {
-        std.debug.print("Body: {s}\n", .{response.body});
-    }
-}
-```
-
-### Low-Level Control API (Coming Soon)
+### Simple GET Request
 
 ```zig
-const zig_net = @import("zig_net");
 const std = @import("std");
+const zig_net = @import("zig_net");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -163,31 +142,118 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     // Create client
-    var client = try zig_net.Client.init(allocator, .{
-        .follow_redirects = true,
-        .max_redirects = 10,
-        .timeout_ms = 5000,
-        .verify_tls = true,
-    });
+    var client = try zig_net.Client.init(allocator, .{});
     defer client.deinit();
 
-    // Build request
-    var request = try zig_net.Request.init(allocator, .POST, "https://httpbin.org/post");
-    defer request.deinit();
-
-    try request.setHeader("Content-Type", "application/json");
-    try request.setHeader("User-Agent", "zig_net/0.1.0");
-    try request.setBody("{\"hello\": \"world\"}");
-
-    // Send request
-    const response = try client.send(request);
+    // Make GET request
+    const response = try client.get("https://httpbin.org/get");
     defer response.deinit();
 
-    std.debug.print("Status: {} {s}\n", .{
-        response.status,
-        zig_net.status.getReasonPhrase(response.status),
-    });
+    if (response.isSuccess()) {
+        std.debug.print("Body: {s}\n", .{response.getBody()});
+    }
 }
+```
+
+### POST with JSON
+
+```zig
+var client = try zig_net.Client.init(allocator, .{});
+defer client.deinit();
+
+var request = try zig_net.Request.init(allocator, .POST, "https://httpbin.org/post");
+defer request.deinit();
+
+_ = try request.setJsonBody("{\"name\": \"Alice\", \"age\": 30}");
+
+const response = try client.send(&request);
+defer response.deinit();
+```
+
+### Authentication
+
+```zig
+var request = try zig_net.Request.init(allocator, .GET, "https://httpbin.org/basic-auth/user/passwd");
+defer request.deinit();
+
+// Basic Auth
+_ = try request.setBasicAuth("user", "passwd");
+
+// Or Bearer Token
+// _ = try request.setBearerToken("your-token-here");
+
+const response = try client.send(&request);
+defer response.deinit();
+```
+
+### Cookie Management
+
+```zig
+var jar = zig_net.CookieJar.init(allocator);
+defer jar.deinit();
+
+// Store cookies from Set-Cookie headers
+try jar.setCookie("session=abc123; Path=/; HttpOnly");
+
+// Get cookies for a request
+const cookies = try jar.getCookiesForRequest(allocator, "https://example.com/api");
+defer allocator.free(cookies);
+
+// Add to request
+_ = try request.setHeader("Cookie", cookies);
+```
+
+### Full Control with Request Builder
+
+```zig
+var client = try zig_net.Client.init(allocator, .{
+    .follow_redirects = true,
+    .max_redirects = 10,
+    .timeout_ms = 30000,
+    .verify_tls = true,
+});
+defer client.deinit();
+
+var request = try zig_net.Request.init(allocator, .POST, "https://api.example.com/data");
+defer request.deinit();
+
+_ = try request.setHeader("Content-Type", "application/json")
+                .setHeader("User-Agent", "MyApp/1.0")
+                .setBasicAuth("user", "password")
+                .setJsonBody("{\"data\": \"value\"}");
+
+const response = try client.send(&request);
+defer response.deinit();
+
+if (response.isSuccess()) {
+    std.debug.print("Status: {d} {s}\n", .{
+        response.getStatus(),
+        response.getReasonPhrase()
+    });
+    std.debug.print("Body: {s}\n", .{response.getBody()});
+}
+```
+
+### Metrics and Interceptors
+
+```zig
+var metrics = zig_net.MetricsCollector.init(allocator);
+defer metrics.deinit();
+
+for (urls) |url| {
+    metrics.recordRequest();
+
+    const response = try client.get(url);
+    defer response.deinit();
+
+    metrics.recordResponse(&response);
+
+    // Optional: Use logging interceptor
+    try zig_net.interceptor.loggingResponseInterceptor(&response);
+}
+
+metrics.printStats();
+std.debug.print("Success Rate: {d:.1}%\n", .{metrics.getSuccessRate()});
 ```
 
 ## Installation (Coming Soon)
@@ -296,14 +362,27 @@ const response = zig_net.Client.get(allocator, uri) catch |err| {
 - **Package Management:** Publish to Zig package manager
 - **CI/CD:** Automated testing and release pipeline
 
+## Documentation
+
+Comprehensive documentation is available:
+
+- **[API Reference](docs/api/API_REFERENCE.md)** - Complete API documentation with all types, methods, and signatures
+- **[Usage Guide](docs/guides/USAGE_GUIDE.md)** - Comprehensive guide with examples and best practices
+- **[Architecture](docs/architecture/ARCHITECTURE.md)** - Library design and implementation details
+- **[Module Map](docs/architecture/MODULE_MAP.md)** - Quick reference for navigating the codebase
+- **[Contributing](CONTRIBUTING.md)** - How to contribute to the project
+- **[Changelog](CHANGELOG.md)** - Version history and changes
+- **[Examples](examples/)** - Working code examples for common use cases
+
 ## For AI Agents
 
 This library is designed with AI assistant integration as a primary use case. AI agents should:
 
 1. **Read This First:** `README.md` (current file) - 5-minute overview
-2. **Navigate Code:** `docs/architecture/MODULE_MAP.md` (coming soon) - Quick file navigation
-3. **Understand Design:** `docs/architecture/ARCHITECTURE.md` - Detailed architecture
-4. **Integration Guide:** `docs/guides/AI_INTEGRATION.md` (coming soon) - How to use this library in other projects
+2. **API Reference:** `docs/api/API_REFERENCE.md` - Complete API documentation
+3. **Usage Guide:** `docs/guides/USAGE_GUIDE.md` - How to use the library
+4. **Navigate Code:** `docs/architecture/MODULE_MAP.md` - Quick file navigation
+5. **Understand Design:** `docs/architecture/ARCHITECTURE.md` - Detailed architecture
 
 ### Development Process for AI Agents
 
@@ -349,26 +428,48 @@ This library is designed with AI assistant integration as a primary use case. AI
 
 ## Contributing
 
-This project is in active development. Contributions will be welcome once Phase 2 (Core HTTP Client) is complete.
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
 
-### Development Roadmap
+- Setting up your development environment
+- Code style and documentation standards
+- Submitting pull requests
+- Running tests
+- Reporting issues
 
-See the [implementation plan](/home/tbick/.claude/plans/zany-watching-peacock.md) for detailed development phases and agent responsibilities.
+All contributions must include appropriate tests and documentation.
 
 ## License
 
-(License to be determined - will be added before v0.1.0 release)
+MIT License - see [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2025 zig_net contributors
 
 ## References
 
-- [Zig Standard Library Documentation](https://ziglang.org/documentation/master/std/)
-- [HTTP/1.1 Specification (RFC 7231)](https://tools.ietf.org/html/rfc7231)
-- [TLS 1.3 Specification (RFC 8446)](https://tools.ietf.org/html/rfc8446)
-- [httpbin.org](https://httpbin.org/) - HTTP testing service
+### Documentation & Specifications
+
+- **[Zig Standard Library Documentation](https://ziglang.org/documentation/master/std/)** - Zig stdlib reference
+- **[HTTP/1.1 Specification (RFC 7231)](https://tools.ietf.org/html/rfc7231)** - HTTP semantics
+- **[HTTP Authentication: Basic Auth (RFC 7617)](https://tools.ietf.org/html/rfc7617)** - Basic authentication
+- **[OAuth 2.0 Bearer Token (RFC 6750)](https://tools.ietf.org/html/rfc6750)** - Bearer token authentication
+- **[HTTP State Management (RFC 6265)](https://tools.ietf.org/html/rfc6265)** - Cookie specification
+- **[Chunked Transfer Encoding (RFC 7230)](https://tools.ietf.org/html/rfc7230)** - HTTP/1.1 transfer codings
+- **[TLS 1.3 Specification (RFC 8446)](https://tools.ietf.org/html/rfc8446)** - Transport Layer Security
+
+### Tools & Services
+
+- **[httpbin.org](https://httpbin.org/)** - HTTP testing service used in integration tests
+- **[Zig Package Manager](https://github.com/ziglang/zig/wiki/FAQ#package-manager)** - Package distribution
+
+### Related Projects
+
+- **[std.http](https://ziglang.org/documentation/master/std/#std.http)** - Zig's HTTP client (underlying implementation)
+- **[std.crypto.tls](https://ziglang.org/documentation/master/std/#std.crypto.tls)** - Zig's TLS implementation
 
 ---
 
-**Project Status:** 🚧 In Development
-**Current Version:** 0.1.0-dev
-**Zig Version:** 0.15.1
+**Project Status:** 🚧 In Development - Phase 6 (Documentation & Packaging)
+**Current Version:** 0.1.0-alpha
+**Zig Version:** 0.15.1+
+**Repository:** https://github.com/TBick/zig_net
 **Last Updated:** 2025-12-28
