@@ -4,10 +4,10 @@
 
 ## Quick Start (AI Summary)
 
-**Purpose:** Full-featured HTTP/HTTPS client with TLS support, redirects, chunked encoding, connection pooling, and timeout handling
+**Purpose:** Full-featured HTTP/HTTPS client with TLS support, redirects, chunked encoding, authentication, cookies, and interceptors
 **Zig Version:** 0.15.1+
 **Dependencies:** None (uses Zig stdlib only)
-**Status:** 🚧 In Development - Phase 3: Advanced Features Complete
+**Status:** 🚧 In Development - Phase 5: Authentication & Cookie Management Complete
 **Installation:** (Coming soon - package will be available via `zig fetch`)
 
 ## Current Development Status
@@ -39,9 +39,28 @@
 - [x] Integration test framework with redirect tests
 - [x] 41/41 tests passing
 
+### ✅ Phase 4: Enhanced Features & Convenience Methods (COMPLETE)
+- [x] Chunked transfer encoding support (RFC 7230 compliant)
+- [x] HTTP protocol utilities (MIME types, URL encoding, Content-Type parsing)
+- [x] Request convenience methods (setJsonBody, setFormBody)
+- [x] Response enhancements (getContentType, getContentLength, isChunked)
+- [x] Basic usage examples
+- [x] Integration testing framework enabled
+- [x] Compression support (automatic via std.http.Client)
+
+### ✅ Phase 5: Authentication & Cookie Management (COMPLETE)
+- [x] HTTP Authentication (Basic Auth RFC 7617, Bearer Token RFC 6750)
+- [x] Request auth methods (setBasicAuth, setBearerToken)
+- [x] Cookie Management (RFC 6265 compliant parsing)
+- [x] Cookie attributes (Domain, Path, Expires, Max-Age, Secure, HttpOnly, SameSite)
+- [x] CookieJar for cookie storage and management
+- [x] Request/Response Interceptors (middleware pattern)
+- [x] MetricsCollector for HTTP statistics
+- [x] Integration tests for auth and cookies
+- [x] Comprehensive examples (auth, cookies, interceptors)
+- [x] 90+ tests passing
+
 ### 📋 Upcoming Phases
-- **Phase 4:** Enhanced Features (chunked encoding, compression)
-- **Phase 5:** Testing & Validation (live integration tests)
 - **Phase 6:** Documentation & Packaging
 - **Phase 7:** CI/CD & Release
 
@@ -69,24 +88,28 @@
 
 ```
 src/
-├── root.zig                 # Public API entry point
+├── root.zig                 # Public API entry point ✅
 ├── errors.zig              # Custom error types ✅
-├── main.zig                 # CLI demo tool
+├── timeout.zig             # Timeout utilities ✅
 ├── client/
-│   ├── Client.zig          # HTTP/HTTPS client wrapper
-│   ├── Request.zig         # Request builder
-│   ├── Response.zig        # Response parser
-│   └── Headers.zig         # Header management
+│   ├── Client.zig          # HTTP/HTTPS client wrapper ✅
+│   ├── Request.zig         # Request builder ✅
+│   ├── Response.zig        # Response parser ✅
+│   └── Headers.zig         # Header management ✅
 ├── protocol/
 │   ├── method.zig          # HTTP method enum ✅
 │   ├── status.zig          # Status code utilities ✅
-│   └── http.zig            # HTTP/1.1 utilities
-├── tls/
-│   ├── config.zig          # TLS configuration
-│   └── cert.zig            # Certificate management
+│   └── http.zig            # HTTP/1.1 utilities ✅
 ├── encoding/
-│   └── chunked.zig         # Chunked transfer encoding
-└── timeout.zig             # Timeout utilities
+│   └── chunked.zig         # Chunked transfer encoding ✅
+├── auth/
+│   └── auth.zig            # Authentication (Basic, Bearer) ✅
+├── cookies/
+│   ├── Cookie.zig          # Cookie parsing (RFC 6265) ✅
+│   └── CookieJar.zig       # Cookie storage & management ✅
+└── interceptors/
+    ├── interceptor.zig     # Request/Response interceptors ✅
+    └── metrics.zig         # Metrics collector ✅
 ```
 
 ## Core Types
@@ -94,11 +117,16 @@ src/
 | Type | Purpose | Status | Key Methods |
 |------|---------|--------|-------------|
 | `Client` | HTTP/HTTPS client | ✅ Complete | `init()`, `get()`, `post()`, `put()`, `delete()`, `send()` |
-| `Request` | Request builder | ✅ Complete | `setHeader()`, `setBody()`, `getUri()`, `getBody()` |
-| `Response` | Response accessor | ✅ Complete | `getStatus()`, `getHeader()`, `getBody()`, `isSuccess()` |
-| `Method` | HTTP method enum | ✅ Complete | `toString()`, `fromString()`, `isSafe()` |
+| `Request` | Request builder | ✅ Complete | `setHeader()`, `setBody()`, `setBasicAuth()`, `setBearerToken()`, `setJsonBody()` |
+| `Response` | Response accessor | ✅ Complete | `getStatus()`, `getHeader()`, `getBody()`, `isSuccess()`, `getContentType()` |
+| `Method` | HTTP method enum | ✅ Complete | `toString()`, `fromString()`, `isSafe()`, `isIdempotent()` |
 | `StatusCode` | Status code utilities | ✅ Complete | `isSuccess()`, `isError()`, `getReasonPhrase()` |
 | `Error` | Custom error types | ✅ Complete | `mapStdError()`, `getErrorMessage()` |
+| `Cookie` | HTTP cookie | ✅ Complete | `parse()`, `matchesDomain()`, `matchesPath()`, `isExpired()` |
+| `CookieJar` | Cookie storage | ✅ Complete | `setCookie()`, `getCookie()`, `getCookiesForRequest()`, `removeExpired()` |
+| `BasicAuth` | Basic authentication | ✅ Complete | `init()`, `toHeader()`, `encode()` |
+| `BearerAuth` | Bearer token auth | ✅ Complete | `init()`, `toHeader()` |
+| `MetricsCollector` | HTTP metrics | ✅ Complete | `recordRequest()`, `recordResponse()`, `getSuccessRate()`, `printStats()` |
 
 ## Planned API Usage
 
@@ -218,38 +246,55 @@ const response = zig_net.Client.get(allocator, uri) catch |err| {
 
 ## Current Features
 
-### ✅ Implemented
-- **Custom Error Types:** Comprehensive error definitions with helper functions
-- **HTTP Methods:** GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, TRACE, CONNECT with safety/idempotency checks
-- **Status Codes:** All standard HTTP status codes with classification helpers (isSuccess, isRedirection, isError, etc.)
-- **Documentation:** AI-optimized inline documentation with examples
+### ✅ Implemented (Phase 5: Latest)
+- **HTTP Authentication:**
+  - Basic Authentication (RFC 7617) with base64 encoding
+  - Bearer Token authentication (RFC 6750) for OAuth 2.0 and JWT
+  - Convenient request methods: `setBasicAuth()`, `setBearerToken()`
+  - Security documentation and best practices
+- **Cookie Management:**
+  - RFC 6265 compliant cookie parsing
+  - Cookie attributes: Domain, Path, Expires, Max-Age, Secure, HttpOnly, SameSite
+  - CookieJar for storage with domain/path matching
+  - Automatic expiration handling
+- **Request/Response Interceptors:**
+  - Middleware pattern for request and response processing
+  - Built-in logging interceptors
+  - MetricsCollector for HTTP statistics
+  - Custom interceptor support
+- **Examples:** Comprehensive examples for auth, cookies, and interceptors
+- **Integration Tests:** Live tests for authentication and cookie handling
 
-### ✅ Newly Implemented (Phase 3)
+### ✅ Implemented (Phase 4)
+- **Chunked Encoding:** RFC 7230 compliant chunked transfer encoding decoder
+- **HTTP Utilities:** MIME types, URL encoding/decoding, Content-Type parsing
+- **Request Enhancements:** `setJsonBody()`, `setFormBody()` convenience methods
+- **Response Enhancements:** `getContentType()`, `getContentLength()`, `isChunked()`
+- **Compression:** Automatic via std.http.Client (gzip, deflate, zstd)
+
+### ✅ Implemented (Phase 3)
 - **Automatic Redirects:** Follows redirects with configurable limits and loop detection
 - **Redirect Handling:** Proper handling of 301, 302, 303, 307, 308 status codes
 - **Method Conversion:** Automatic method conversion for 303 redirects (to GET)
-- **Timeout Utilities:** Deadline calculation and timeout management utilities
+- **Timeout Utilities:** Deadline calculation and timeout management
 - **Enhanced Options:** Configurable follow_redirects, max_redirects, timeout_ms, verify_tls
-- **Comprehensive Testing:** 41 unit tests passing, integration test suite for redirects
 - **HTTPS Support:** Built-in via std.http.Client with configurable verification
 
-### ✅ Previously Implemented (Phase 2)
+### ✅ Implemented (Phase 2)
 - **HTTP Client:** Full request/response abstraction layer wrapping std.http.Client
 - **Headers Management:** Case-insensitive header handling with HashMap storage
 - **Request Builder:** Fluent API with method chaining for building requests
 - **Response Parser:** Convenient accessors for status, headers, and body
 
-### ✅ Foundation (Phase 1)
+### ✅ Implemented (Phase 1: Foundation)
 - **Error Handling:** Comprehensive error types with helpful messages
 - **HTTP Methods:** All standard methods with safety/idempotency checks
 - **Status Codes:** Complete status code utilities with classification helpers
 
 ### 📋 Planned
-- **Chunked Encoding:** Support for chunked transfer encoding
-- **Connection Pooling:** Enhanced control over std.http.Client pooling
-- **Compression:** Gzip/deflate support
-- **Live Integration Tests:** Enabled tests against httpbin.org
-- **Examples:** Comprehensive usage examples and tutorials
+- **Documentation:** Enhanced API documentation and guides
+- **Package Management:** Publish to Zig package manager
+- **CI/CD:** Automated testing and release pipeline
 
 ## For AI Agents
 
@@ -285,14 +330,22 @@ This library is designed with AI assistant integration as a primary use case. AI
 - Error definitions: `src/errors.zig`
 - HTTP methods: `src/protocol/method.zig`
 - Status codes: `src/protocol/status.zig`
-- Client (planned): `src/client/Client.zig`
-- Request (planned): `src/client/Request.zig`
-- Response (planned): `src/client/Response.zig`
+- HTTP client: `src/client/Client.zig`
+- Request builder: `src/client/Request.zig`
+- Response parser: `src/client/Response.zig`
+- Headers: `src/client/Headers.zig`
+- Authentication: `src/auth/auth.zig`
+- Cookies: `src/cookies/Cookie.zig`, `src/cookies/CookieJar.zig`
+- Interceptors: `src/interceptors/interceptor.zig`
+- Metrics: `src/interceptors/metrics.zig`
+- Chunked encoding: `src/encoding/chunked.zig`
+- Timeout utilities: `src/timeout.zig`
 
 **Common Tasks:**
 - Adding new error type → Edit `src/errors.zig`
 - Adding HTTP method → Edit `src/protocol/method.zig`
 - Testing → Add to `tests/unit/` or `tests/integration/`
+- Examples → Add to `examples/`
 
 ## Contributing
 

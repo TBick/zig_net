@@ -234,6 +234,127 @@ test "integration: POST request" {
 //     try testing.expect(response.getHeader("Location") != null);
 // }
 
+// Phase 5: Authentication Tests
+
+test "integration: Basic Authentication" {
+    const testing = std.testing;
+    const allocator = testing.allocator;
+
+    var client = try zig_net.Client.init(allocator, .{});
+    defer client.deinit();
+
+    var request = try zig_net.Request.init(allocator, .GET, "https://httpbin.org/basic-auth/user/passwd");
+    defer request.deinit();
+
+    // Set Basic Auth credentials
+    _ = try request.setBasicAuth("user", "passwd");
+
+    const response = try client.send(&request);
+    defer response.deinit();
+
+    try testing.expect(response.isSuccess());
+    try testing.expectEqual(@as(u16, 200), response.getStatus());
+
+    const body = response.getBody();
+    try testing.expect(std.mem.indexOf(u8, body, "authenticated") != null);
+}
+
+// test "integration: Basic Authentication - Invalid Credentials" {
+//     const testing = std.testing;
+//     const allocator = testing.allocator;
+//
+//     var client = try zig_net.Client.init(allocator, .{});
+//     defer client.deinit();
+//
+//     var request = try zig_net.Request.init(allocator, .GET, "https://httpbin.org/basic-auth/user/passwd");
+//     defer request.deinit();
+//
+//     // Set wrong credentials
+//     _ = try request.setBasicAuth("user", "wrong");
+//
+//     const response = try client.send(&request);
+//     defer response.deinit();
+//
+//     try testing.expect(response.isClientError());
+//     try testing.expectEqual(@as(u16, 401), response.getStatus());
+// }
+
+test "integration: Bearer Token Authentication" {
+    const testing = std.testing;
+    const allocator = testing.allocator;
+
+    var client = try zig_net.Client.init(allocator, .{});
+    defer client.deinit();
+
+    var request = try zig_net.Request.init(allocator, .GET, "https://httpbin.org/bearer");
+    defer request.deinit();
+
+    // Set Bearer token
+    _ = try request.setBearerToken("test-token-12345");
+
+    const response = try client.send(&request);
+    defer response.deinit();
+
+    try testing.expect(response.isSuccess());
+    try testing.expectEqual(@as(u16, 200), response.getStatus());
+
+    const body = response.getBody();
+    try testing.expect(std.mem.indexOf(u8, body, "authenticated") != null);
+    try testing.expect(std.mem.indexOf(u8, body, "test-token-12345") != null);
+}
+
+// Phase 5: Cookie Tests
+
+test "integration: Cookie handling" {
+    const testing = std.testing;
+    const allocator = testing.allocator;
+
+    var client = try zig_net.Client.init(allocator, .{});
+    defer client.deinit();
+
+    // httpbin.org/cookies/set sets a cookie and redirects
+    const response = try client.get("https://httpbin.org/cookies/set?session=abc123&user=alice");
+    defer response.deinit();
+
+    try testing.expect(response.isSuccess());
+    try testing.expectEqual(@as(u16, 200), response.getStatus());
+
+    // The response body should show the cookies
+    const body = response.getBody();
+    try testing.expect(std.mem.indexOf(u8, body, "cookies") != null);
+}
+
+// test "integration: CookieJar with requests" {
+//     const testing = std.testing;
+//     const allocator = testing.allocator;
+//
+//     var jar = zig_net.CookieJar.init(allocator);
+//     defer jar.deinit();
+//
+//     // Add cookies to jar
+//     try jar.setCookie("session=xyz123; Path=/; Domain=.httpbin.org");
+//     try jar.setCookie("user=bob; Path=/");
+//
+//     var client = try zig_net.Client.init(allocator, .{});
+//     defer client.deinit();
+//
+//     var request = try zig_net.Request.init(allocator, .GET, "https://httpbin.org/cookies");
+//     defer request.deinit();
+//
+//     // Get cookies for this request
+//     const cookie_header = try jar.getCookiesForRequest(allocator, "https://httpbin.org/cookies");
+//     defer allocator.free(cookie_header);
+//
+//     if (cookie_header.len > 0) {
+//         _ = try request.setHeader("Cookie", cookie_header);
+//     }
+//
+//     const response = try client.send(&request);
+//     defer response.deinit();
+//
+//     try testing.expect(response.isSuccess());
+// }
+
 // Placeholder test to ensure the file compiles
 test "integration tests placeholder" {
     // Integration tests are commented out by default

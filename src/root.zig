@@ -50,6 +50,10 @@ pub const BearerAuth = auth.BearerAuth;
 pub const Cookie = @import("cookies/Cookie.zig");
 pub const CookieJar = @import("cookies/CookieJar.zig");
 
+// Re-export interceptor utilities
+pub const interceptor = @import("interceptors/interceptor.zig");
+pub const MetricsCollector = @import("interceptors/metrics.zig").MetricsCollector;
+
 // Re-export error types
 pub const errors = @import("errors.zig");
 pub const Error = errors.Error;
@@ -69,6 +73,8 @@ test {
     _ = @import("auth/auth.zig");
     _ = @import("cookies/Cookie.zig");
     _ = @import("cookies/CookieJar.zig");
+    _ = @import("interceptors/interceptor.zig");
+    _ = @import("interceptors/metrics.zig");
     _ = @import("client/Headers.zig");
     _ = @import("client/Request.zig");
     _ = @import("client/Response.zig");
