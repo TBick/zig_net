@@ -24,6 +24,7 @@ const errors = @import("../errors.zig");
 const Method = @import("../protocol/method.zig").Method;
 const http = @import("../protocol/http.zig");
 const Headers = @import("Headers.zig");
+const auth = @import("../auth/auth.zig");
 
 /// HTTP Request builder
 ///
@@ -211,6 +212,57 @@ pub fn setFormBody(self: *Request, form_data: *const std.StringHashMap([]const u
 
     _ = try self.setBody(form_body);
     _ = try self.setHeader("Content-Type", http.MimeType.FORM_URLENCODED);
+    return self;
+}
+
+/// Sets HTTP Basic Authentication
+///
+/// This is a convenience method that encodes the username and password
+/// and sets the Authorization header with Basic authentication.
+///
+/// # Parameters
+/// - `self`: The Request instance
+/// - `username`: Username for authentication
+/// - `password`: Password for authentication
+///
+/// # Returns
+/// Returns a pointer to self for method chaining
+///
+/// # Security
+/// Credentials are base64 encoded, NOT encrypted. Always use HTTPS.
+///
+/// # Example
+/// ```zig
+/// _ = try request.setBasicAuth("alice", "secret123");
+/// ```
+pub fn setBasicAuth(self: *Request, username: []const u8, password: []const u8) !*Request {
+    const basic_auth = auth.BasicAuth.init(username, password);
+    try basic_auth.applyToRequest(self);
+    return self;
+}
+
+/// Sets Bearer token authentication
+///
+/// This is a convenience method that sets the Authorization header
+/// with a Bearer token (e.g., OAuth 2.0, JWT).
+///
+/// # Parameters
+/// - `self`: The Request instance
+/// - `token`: Bearer token for authentication
+///
+/// # Returns
+/// Returns a pointer to self for method chaining
+///
+/// # Security
+/// Tokens grant access to resources. Always use HTTPS to protect tokens.
+///
+/// # Example
+/// ```zig
+/// _ = try request.setBearerToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...");
+/// ```
+pub fn setBearerToken(self: *Request, token: []const u8) !*Request {
+    const bearer_auth = auth.BearerAuth.init(token);
+    try bearer_auth.applyToRequest(self);
     return self;
 }
 

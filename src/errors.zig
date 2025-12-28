@@ -70,6 +70,10 @@ pub const Error = error{
     /// Chunked transfer encoding is malformed
     InvalidChunkedEncoding,
 
+    /// Decompression failed
+    /// The compressed data is corrupted or uses an unsupported compression format
+    DecompressionError,
+
     // Resource errors
 
     /// Memory allocation failed
@@ -188,6 +192,7 @@ pub fn getErrorMessage(err: anyerror) []const u8 {
         Error.UnsupportedEncoding => "Response uses unsupported encoding",
         Error.InvalidHeaders => "Response headers are malformed",
         Error.InvalidChunkedEncoding => "Chunked transfer encoding is malformed",
+        Error.DecompressionError => "Failed to decompress response data",
         Error.OutOfMemory => "Memory allocation failed - out of memory",
         Error.BufferTooSmall => "Buffer too small to hold data",
         Error.InvalidUri => "URI is malformed or uses unsupported scheme (use http:// or https://)",

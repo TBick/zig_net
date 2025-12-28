@@ -41,6 +41,11 @@ pub const http = @import("protocol/http.zig");
 // Re-export encoding utilities
 pub const chunked = @import("encoding/chunked.zig");
 
+// Re-export authentication utilities
+pub const auth = @import("auth/auth.zig");
+pub const BasicAuth = auth.BasicAuth;
+pub const BearerAuth = auth.BearerAuth;
+
 // Re-export error types
 pub const errors = @import("errors.zig");
 pub const Error = errors.Error;
@@ -57,6 +62,7 @@ test {
     _ = @import("protocol/status.zig");
     _ = @import("protocol/http.zig");
     _ = @import("encoding/chunked.zig");
+    _ = @import("auth/auth.zig");
     _ = @import("client/Headers.zig");
     _ = @import("client/Request.zig");
     _ = @import("client/Response.zig");

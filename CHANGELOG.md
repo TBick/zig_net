@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added - Phase 5: Authentication Support ✅
+- HTTP Authentication Helpers (`src/auth/`)
+  - Basic Authentication (RFC 7617) with base64 encoding
+  - Bearer Token authentication (RFC 6750) for OAuth 2.0 and JWT
+  - Comprehensive security documentation and best practices
+
+- Request Authentication Methods (`src/client/Request.zig`)
+  - `setBasicAuth()` - Convenient Basic authentication
+  - `setBearerToken()` - Convenient Bearer token authentication
+  - Method chaining support for all auth methods
+
+- Compression Support
+  - **Note:** Compression (gzip, deflate, zstd) is automatically handled by `std.http.Client`
+  - No custom implementation needed - it's built into the underlying HTTP client
+  - Transparent compression/decompression for all requests and responses
+
 ### Added - Phase 4: Enhanced Features & Convenience Methods ✅
 - Chunked Transfer Encoding Support (`src/encoding/chunked.zig`)
   - RFC 7230 compliant chunked decoder
