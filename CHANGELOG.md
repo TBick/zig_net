@@ -7,14 +7,106 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### In Progress
-- Phase 2: Core HTTP Client implementation
-  - Request builder with method chaining
-  - Response parser with convenient accessors
-  - Headers management (case-insensitive)
-  - Client wrapper around std.http.Client
-  - Basic HTTP methods (GET, POST, PUT, DELETE, etc.)
-  - Unit and integration tests
+### Added - Phase 4: Enhanced Features & Convenience Methods ✅
+- Chunked Transfer Encoding Support (`src/encoding/chunked.zig`)
+  - RFC 7230 compliant chunked decoder
+  - Handles chunk extensions and trailer headers
+  - Automatic integration with Client for chunked responses
+  - Comprehensive test suite (11 tests)
+
+- HTTP Protocol Utilities (`src/protocol/http.zig`)
+  - HTTP version enum (HTTP/1.0, HTTP/1.1, HTTP/2)
+  - MIME type constants (JSON, form-urlencoded, text/plain, etc.)
+  - Content-Type header parsing with charset extraction
+  - URL encoding/decoding (RFC 3986 compliant)
+  - User-Agent string constant
+
+- Request Enhancements
+  - `setJsonBody()` - Convenience method for JSON requests
+  - `setFormBody()` - Automatic form data encoding
+  - Method chaining support for all builder methods
+
+- Response Enhancements
+  - `getContentType()` - Extract Content-Type header
+  - `getParsedContentType()` - Parse MIME type and charset
+  - `getContentLength()` - Get content length from headers
+  - `isChunked()` - Check if response uses chunked encoding
+
+- Examples
+  - Basic usage examples (`examples/basic_usage.zig`)
+  - Five example patterns: GET, POST JSON, custom headers, error handling, form data
+
+- Integration Testing
+  - Enabled live integration tests with httpbin.org
+  - GET and POST request tests
+  - Framework ready for comprehensive integration testing
+
+### Added - Phase 3: Advanced Client Features ✅
+- Automatic Redirect Following
+  - Configurable redirect following (enabled by default)
+  - Max redirects limit (default: 10)
+  - Redirect loop detection using visited URL tracking
+  - Proper handling of redirect status codes:
+    - 301 Moved Permanently
+    - 302 Found
+    - 303 See Other (always converts to GET)
+    - 307 Temporary Redirect
+    - 308 Permanent Redirect
+  - Relative and absolute URL resolution
+
+- Client Configuration
+  - `ClientOptions` struct for fine-grained control
+  - `follow_redirects` - Enable/disable redirect following
+  - `max_redirects` - Limit redirect chains
+  - `timeout_ms` - Request timeout in milliseconds (default: 30s)
+  - `verify_tls` - TLS certificate verification control
+
+- Timeout Management (`src/timeout.zig`)
+  - Deadline calculation utilities
+  - Timeout expiration checking
+  - Remaining time calculations
+  - Full test coverage
+
+- Error Handling
+  - `TooManyRedirects` - Exceeded max redirect limit
+  - `RedirectLoopDetected` - Circular redirect detection
+  - `InvalidRedirectLocation` - Missing or invalid Location header
+  - `TimeoutError` - Request timeout errors
+
+### Added - Phase 2: Core HTTP Client Implementation ✅
+- Request Builder (`src/client/Request.zig`)
+  - Builder pattern with method chaining
+  - URI validation (http:// and https://)
+  - Header management
+  - Body support with memory ownership
+  - Comprehensive test suite
+
+- Response Parser (`src/client/Response.zig`)
+  - Status code accessors
+  - Headers management
+  - Body accessors
+  - Status classification methods (`isSuccess()`, `isRedirection()`, etc.)
+  - Reason phrase lookup
+
+- Headers Management (`src/client/Headers.zig`)
+  - Case-insensitive header lookups
+  - Efficient storage using StringHashMap
+  - Header iteration support
+  - Duplicate header handling
+
+- HTTP/HTTPS Client (`src/client/Client.zig`)
+  - Wrapper around std.http.Client
+  - Connection pooling via std.http.Client
+  - Convenience methods: `get()`, `post()`, `put()`, `delete()`
+  - Full control via `send()` with Request objects
+  - Automatic chunked encoding handling
+
+- Integration Testing Framework
+  - httpbin.org integration tests
+  - Tests for all HTTP methods
+  - Redirect testing
+  - Custom header testing
+  - Error status code testing
 
 ## [0.1.0-dev] - 2025-12-26
 

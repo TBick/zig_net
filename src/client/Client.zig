@@ -41,6 +41,7 @@ const Method = @import("../protocol/method.zig").Method;
 const Request = @import("Request.zig");
 const Response = @import("Response.zig");
 const Headers = @import("Headers.zig");
+const chunked = @import("../encoding/chunked.zig");
 
 /// Client configuration options
 pub const ClientOptions = struct {
@@ -365,8 +366,8 @@ fn sendInternal(self: *Client, request: *const Request) !Response {
     try http_request.wait();
 
     // Read the response body
-    const body = try http_request.reader().readAllAlloc(self.allocator, 10 * 1024 * 1024); // 10 MB limit
-    errdefer self.allocator.free(body);
+    const raw_body = try http_request.reader().readAllAlloc(self.allocator, 10 * 1024 * 1024); // 10 MB limit
+    errdefer self.allocator.free(raw_body);
 
     // Copy response headers into our Headers structure
     var response_headers = Headers.init(self.allocator);
@@ -376,6 +377,19 @@ fn sendInternal(self: *Client, request: *const Request) !Response {
     while (field_it.next()) |header| {
         try response_headers.append(header.name, header.value);
     }
+
+    // Check if response is chunked-encoded
+    const is_chunked = if (response_headers.get("Transfer-Encoding")) |encoding|
+        std.mem.indexOf(u8, encoding, "chunked") != null
+    else
+        false;
+
+    // Decode chunked encoding if present
+    const body = if (is_chunked) blk: {
+        const decoded = try chunked.decode(self.allocator, raw_body);
+        self.allocator.free(raw_body);
+        break :blk decoded;
+    } else raw_body;
 
     // Create and return the response
     return Response.init(

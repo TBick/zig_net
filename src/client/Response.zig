@@ -23,6 +23,7 @@
 const std = @import("std");
 const errors = @import("../errors.zig");
 const status_utils = @import("../protocol/status.zig");
+const http = @import("../protocol/http.zig");
 const Headers = @import("Headers.zig");
 
 /// HTTP Response
@@ -155,6 +156,41 @@ pub fn isError(self: *const Response) bool {
 /// Returns the standard HTTP reason phrase (e.g., "OK", "Not Found")
 pub fn getReasonPhrase(self: *const Response) []const u8 {
     return status_utils.getReasonPhrase(self.status);
+}
+
+/// Gets the Content-Type header value
+///
+/// # Returns
+/// Returns the Content-Type header value if present, or null
+pub fn getContentType(self: *const Response) ?[]const u8 {
+    return self.headers.get("Content-Type");
+}
+
+/// Parses the Content-Type header
+///
+/// # Returns
+/// Returns parsed Content-Type with mime type and optional charset
+pub fn getParsedContentType(self: *const Response) ?http.ParsedContentType {
+    const content_type = self.getContentType() orelse return null;
+    return http.parseContentType(content_type);
+}
+
+/// Gets the Content-Length header value
+///
+/// # Returns
+/// Returns the Content-Length as a number if present and valid, or null
+pub fn getContentLength(self: *const Response) ?usize {
+    const length_str = self.headers.get("Content-Length") orelse return null;
+    return std.fmt.parseInt(usize, length_str, 10) catch null;
+}
+
+/// Checks if the response uses chunked transfer encoding
+///
+/// # Returns
+/// Returns true if Transfer-Encoding header contains "chunked"
+pub fn isChunked(self: *const Response) bool {
+    const encoding = self.headers.get("Transfer-Encoding") orelse return false;
+    return std.mem.indexOf(u8, encoding, "chunked") != null;
 }
 
 // Tests

@@ -36,6 +36,10 @@ pub const Headers = @import("client/Headers.zig");
 pub const Method = @import("protocol/method.zig").Method;
 pub const status = @import("protocol/status.zig");
 pub const StatusCode = status.StatusCode;
+pub const http = @import("protocol/http.zig");
+
+// Re-export encoding utilities
+pub const chunked = @import("encoding/chunked.zig");
 
 // Re-export error types
 pub const errors = @import("errors.zig");
@@ -51,6 +55,8 @@ test {
     _ = @import("errors.zig");
     _ = @import("protocol/method.zig");
     _ = @import("protocol/status.zig");
+    _ = @import("protocol/http.zig");
+    _ = @import("encoding/chunked.zig");
     _ = @import("client/Headers.zig");
     _ = @import("client/Request.zig");
     _ = @import("client/Response.zig");

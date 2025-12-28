@@ -22,6 +22,7 @@
 const std = @import("std");
 const errors = @import("../errors.zig");
 const Method = @import("../protocol/method.zig").Method;
+const http = @import("../protocol/http.zig");
 const Headers = @import("Headers.zig");
 
 /// HTTP Request builder
@@ -140,6 +141,76 @@ pub fn setBody(self: *Request, body: []const u8) !*Request {
     }
 
     self.body = try self.allocator.dupe(u8, body);
+    return self;
+}
+
+/// Sets a JSON body and Content-Type header
+///
+/// This is a convenience method that sets the body and automatically
+/// sets the Content-Type header to "application/json".
+///
+/// # Parameters
+/// - `self`: The Request instance
+/// - `json_body`: JSON string
+///
+/// # Returns
+/// Returns a pointer to self for method chaining
+///
+/// # Example
+/// ```zig
+/// try request.setJsonBody("{\"name\": \"Alice\"}");
+/// ```
+pub fn setJsonBody(self: *Request, json_body: []const u8) !*Request {
+    _ = try self.setBody(json_body);
+    _ = try self.setHeader("Content-Type", http.MimeType.JSON);
+    return self;
+}
+
+/// Sets a form-encoded body and Content-Type header
+///
+/// This is a convenience method that URL-encodes form data and sets
+/// the appropriate Content-Type header.
+///
+/// # Parameters
+/// - `self`: The Request instance
+/// - `form_data`: Form data as key-value pairs
+///
+/// # Returns
+/// Returns a pointer to self for method chaining
+///
+/// # Example
+/// ```zig
+/// var form = std.StringHashMap([]const u8).init(allocator);
+/// try form.put("username", "alice");
+/// try form.put("password", "secret");
+/// try request.setFormBody(&form);
+/// ```
+pub fn setFormBody(self: *Request, form_data: *const std.StringHashMap([]const u8)) !*Request {
+    var result = std.ArrayList(u8){};
+    defer result.deinit(self.allocator);
+
+    var first = true;
+    var it = form_data.iterator();
+    while (it.next()) |entry| {
+        if (!first) try result.append(self.allocator, '&');
+        first = false;
+
+        const encoded_key = try http.urlEncode(self.allocator, entry.key_ptr.*);
+        defer self.allocator.free(encoded_key);
+        try result.appendSlice(self.allocator, encoded_key);
+
+        try result.append(self.allocator, '=');
+
+        const encoded_value = try http.urlEncode(self.allocator, entry.value_ptr.*);
+        defer self.allocator.free(encoded_value);
+        try result.appendSlice(self.allocator, encoded_value);
+    }
+
+    const form_body = try result.toOwnedSlice(self.allocator);
+    defer self.allocator.free(form_body);
+
+    _ = try self.setBody(form_body);
+    _ = try self.setHeader("Content-Type", http.MimeType.FORM_URLENCODED);
     return self;
 }
 

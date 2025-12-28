@@ -31,27 +31,27 @@ test "integration: GET request" {
 //     try testing.expect(body.len > 0);
 // }
 
-// test "integration: POST request" {
-//     const testing = std.testing;
-//     const allocator = testing.allocator;
-//
-//     var client = try zig_net.Client.init(allocator, .{});
-//     defer client.deinit();
-//
-//     const test_body = "{\"test\": true}";
-//     const response = try client.post(
-//         "https://httpbin.org/post",
-//         test_body,
-//         "application/json",
-//     );
-//     defer response.deinit();
-//
-//     try testing.expect(response.isSuccess());
-//     try testing.expectEqual(@as(u16, 200), response.getStatus());
-//
-//     const body = response.getBody();
-//     try testing.expect(body.len > 0);
-// }
+test "integration: POST request" {
+    const testing = std.testing;
+    const allocator = testing.allocator;
+
+    var client = try zig_net.Client.init(allocator, .{});
+    defer client.deinit();
+
+    const test_body = "{\"test\": true}";
+    const response = try client.post(
+        "https://httpbin.org/post",
+        test_body,
+        "application/json",
+    );
+    defer response.deinit();
+
+    try testing.expect(response.isSuccess());
+    try testing.expectEqual(@as(u16, 200), response.getStatus());
+
+    const body = response.getBody();
+    try testing.expect(body.len > 0);
+}
 
 // test "integration: Custom headers" {
 //     const testing = std.testing;

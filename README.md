@@ -257,8 +257,27 @@ This library is designed with AI assistant integration as a primary use case. AI
 
 1. **Read This First:** `README.md` (current file) - 5-minute overview
 2. **Navigate Code:** `docs/architecture/MODULE_MAP.md` (coming soon) - Quick file navigation
-3. **Understand Design:** `docs/architecture/ARCHITECTURE.md` (coming soon) - Detailed architecture
+3. **Understand Design:** `docs/architecture/ARCHITECTURE.md` - Detailed architecture
 4. **Integration Guide:** `docs/guides/AI_INTEGRATION.md` (coming soon) - How to use this library in other projects
+
+### Development Process for AI Agents
+
+**IMPORTANT:** When continuing development on this project:
+
+1. **Always Create a Plan First:** Before starting any new phase, create a comprehensive plan that includes:
+   - Components to implement
+   - Implementation order
+   - Success criteria
+   - Testing strategy
+   - Estimated scope
+
+2. **Use TodoWrite Tool:** Track all tasks using the TodoWrite tool throughout implementation
+
+3. **Follow Existing Patterns:** Match the code style, documentation format, and testing approach used in existing modules
+
+4. **Comprehensive Testing:** Every feature must have unit tests, and integration tests where applicable
+
+5. **Update Documentation:** README.md and inline doc comments must be updated for all changes
 
 ### AI Agent Quick Reference
 
