@@ -1,23 +1,55 @@
-//! By convention, root.zig is the root source file when making a library.
+//! zig_net - HTTP/HTTPS Client Library for Zig
+//!
+//! This is the public API entry point for the zig_net library.
+//! It provides a convenient HTTP/HTTPS client with support for:
+//! - All HTTP methods (GET, POST, PUT, DELETE, etc.)
+//! - HTTPS/TLS connections
+//! - Custom headers
+//! - Request body support
+//! - Response parsing
+//!
+//! # Quick Start
+//!
+//! ```zig
+//! const zig_net = @import("zig_net");
+//!
+//! var client = try zig_net.Client.init(allocator, .{});
+//! defer client.deinit();
+//!
+//! const response = try client.get("https://httpbin.org/get");
+//! defer response.deinit();
+//!
+//! if (response.isSuccess()) {
+//!     std.debug.print("Body: {s}\n", .{response.getBody()});
+//! }
+//! ```
+
 const std = @import("std");
 
-pub fn bufferedPrint() !void {
-    // Stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    var stdout_buffer: [1024]u8 = undefined;
-    var stdout_writer = std.fs.File.stdout().writer(&stdout_buffer);
-    const stdout = &stdout_writer.interface;
+// Re-export core types
+pub const Client = @import("client/Client.zig");
+pub const Request = @import("client/Request.zig");
+pub const Response = @import("client/Response.zig");
+pub const Headers = @import("client/Headers.zig");
 
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
+// Re-export protocol types
+pub const Method = @import("protocol/method.zig").Method;
+pub const status = @import("protocol/status.zig");
+pub const StatusCode = status.StatusCode;
 
-    try stdout.flush(); // Don't forget to flush!
-}
+// Re-export error types
+pub const errors = @import("errors.zig");
+pub const Error = errors.Error;
+pub const ErrorSet = errors.ErrorSet;
 
-pub fn add(a: i32, b: i32) i32 {
-    return a + b;
-}
-
-test "basic add functionality" {
-    try std.testing.expect(add(3, 7) == 10);
+// Run all tests
+test {
+    std.testing.refAllDecls(@This());
+    _ = @import("errors.zig");
+    _ = @import("protocol/method.zig");
+    _ = @import("protocol/status.zig");
+    _ = @import("client/Headers.zig");
+    _ = @import("client/Request.zig");
+    _ = @import("client/Response.zig");
+    _ = @import("client/Client.zig");
 }
