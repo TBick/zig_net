@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added - Phase 5: Authentication Support ✅
+### Added - Phase 5: Authentication & Cookie Management ✅
 - HTTP Authentication Helpers (`src/auth/`)
   - Basic Authentication (RFC 7617) with base64 encoding
   - Bearer Token authentication (RFC 6750) for OAuth 2.0 and JWT
@@ -17,6 +17,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `setBasicAuth()` - Convenient Basic authentication
   - `setBearerToken()` - Convenient Bearer token authentication
   - Method chaining support for all auth methods
+
+- Cookie Management (`src/cookies/`)
+  - `Cookie.zig` - RFC 6265 compliant cookie parsing
+  - Cookie attributes: Domain, Path, Expires, Max-Age, Secure, HttpOnly, SameSite
+  - Domain and path matching for cookie selection
+  - Expiration handling
+  - `CookieJar.zig` - Cookie storage and management
+  - Automatic cookie replacement when setting duplicates
+  - Cookie retrieval for outgoing requests
+  - Expired cookie cleanup
+  - 14 comprehensive unit tests
 
 - Compression Support
   - **Note:** Compression (gzip, deflate, zstd) is automatically handled by `std.http.Client`
