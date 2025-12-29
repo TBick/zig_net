@@ -367,7 +367,7 @@ const response = zig_net.Client.get(allocator, uri) catch |err| {
 Comprehensive documentation is available:
 
 - **[API Reference](docs/api/API_REFERENCE.md)** - Complete API documentation with all types, methods, and signatures
-- **[Usage Guide](docs/guides/USAGE_GUIDE.md)** - Comprehensive guide with examples and best practices
+- **[Complete Usage Guide](docs/guides/USAGE_GUIDE.md)** - Comprehensive step-by-step guide with 17 sections covering all features, including real examples tested against httpbin.org
 - **[Architecture](docs/architecture/ARCHITECTURE.md)** - Library design and implementation details
 - **[Module Map](docs/architecture/MODULE_MAP.md)** - Quick reference for navigating the codebase
 - **[Contributing](CONTRIBUTING.md)** - How to contribute to the project
@@ -379,8 +379,8 @@ Comprehensive documentation is available:
 This library is designed with AI assistant integration as a primary use case. AI agents should:
 
 1. **Read This First:** `README.md` (current file) - 5-minute overview
-2. **API Reference:** `docs/api/API_REFERENCE.md` - Complete API documentation
-3. **Usage Guide:** `docs/guides/USAGE_GUIDE.md` - How to use the library
+2. **Complete Usage Guide:** `docs/guides/USAGE_GUIDE.md` - Comprehensive step-by-step guide with 17 sections and real working examples
+3. **API Reference:** `docs/api/API_REFERENCE.md` - Complete API documentation
 4. **Navigate Code:** `docs/architecture/MODULE_MAP.md` - Quick file navigation
 5. **Understand Design:** `docs/architecture/ARCHITECTURE.md` - Detailed architecture
 
